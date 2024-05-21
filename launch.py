@@ -21,6 +21,7 @@ import fooocus_version
 from build_launcher import build_launcher
 from modules.launch_util import is_installed, run, python, run_pip, requirements_met, delete_folder_content
 from modules.model_loader import load_file_from_url
+from modules import config
 
 REINSTALL_ALL = False
 TRY_INSTALL_XFORMERS = False
@@ -62,8 +63,8 @@ def prepare_environment():
 vae_approx_filenames = [
     ('xlvaeapp.pth', 'https://huggingface.co/lllyasviel/misc/resolve/main/xlvaeapp.pth'),
     ('vaeapp_sd15.pth', 'https://huggingface.co/lllyasviel/misc/resolve/main/vaeapp_sd15.pt'),
-    ('xl-to-v1_interposer-v3.1.safetensors',
-     'https://huggingface.co/lllyasviel/misc/resolve/main/xl-to-v1_interposer-v3.1.safetensors')
+    ('xl-to-v1_interposer-v4.0.safetensors',
+     'https://huggingface.co/mashb1t/misc/resolve/main/xl-to-v1_interposer-v4.0.safetensors')
 ]
 
 
@@ -80,7 +81,12 @@ if args.gpu_device_id is not None:
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
     print("Set device to:", args.gpu_device_id)
 
+if args.hf_mirror is not None : 
+    os.environ['HF_MIRROR'] = str(args.hf_mirror)
+    print("Set hf_mirror to:", args.hf_mirror)
+
 from modules import config
+os.environ["U2NET_HOME"] = config.path_inpaint
 
 os.environ['GRADIO_TEMP_DIR'] = config.temp_path
 
@@ -91,7 +97,6 @@ if config.temp_path_cleanup_on_launch:
         print("[Cleanup] Cleanup successful")
     else:
         print(f"[Cleanup] Failed to delete content of temp dir.")
-
 
 def download_models(default_model, previous_default_models, checkpoint_downloads, embeddings_downloads, lora_downloads):
     for file_name, url in vae_approx_filenames:
