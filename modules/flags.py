@@ -34,7 +34,8 @@ KSAMPLER = {
     "dpmpp_3m_sde": "",
     "dpmpp_3m_sde_gpu": "",
     "ddpm": "",
-    "lcm": "LCM"
+    "lcm": "LCM",
+    "tcd": "TCD"
 }
 
 SAMPLER_EXTRA = {
@@ -47,11 +48,13 @@ SAMPLERS = KSAMPLER | SAMPLER_EXTRA
 
 KSAMPLER_NAMES = list(KSAMPLER.keys())
 
-SCHEDULER_NAMES = ["normal", "karras", "exponential", "sgm_uniform", "simple", "ddim_uniform", "lcm", "turbo"]
+SCHEDULER_NAMES = ["normal", "karras", "exponential", "sgm_uniform", "simple", "ddim_uniform", "lcm", "turbo", "align_your_steps", "tcd"]
 SAMPLER_NAMES = KSAMPLER_NAMES + list(SAMPLER_EXTRA.keys())
 
 sampler_list = SAMPLER_NAMES
 scheduler_list = SCHEDULER_NAMES
+
+default_vae = 'Default (model)'
 
 refiner_swap_method = 'joint'
 
@@ -68,6 +71,10 @@ default_parameters = {
 }  # stop, weight
 
 output_formats = ['png', 'jpeg', 'webp']
+
+inpaint_mask_models = ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam']
+inpaint_mask_cloth_category = ['full', 'upper', 'lower']
+inpaint_mask_sam_model = ['sam_vit_b_01ec64', 'sam_vit_h_4b8939', 'sam_vit_l_0b3195']
 
 inpaint_engine_versions = ['None', 'v1', 'v2.5', 'v2.6']
 inpaint_option_default = 'Inpaint or Outpaint (default)'
@@ -90,6 +97,7 @@ metadata_scheme = [
 ]
 
 controlnet_image_count = 4
+preparation_step_count = 13
 
 
 class OutputFormat(Enum):
@@ -107,6 +115,7 @@ class Steps(IntEnum):
     SPEED = 30
     EXTREME_SPEED = 8
     LIGHTNING = 4
+    HYPER_SD = 4
 
 
 class StepsUOV(IntEnum):
@@ -114,6 +123,7 @@ class StepsUOV(IntEnum):
     SPEED = 18
     EXTREME_SPEED = 8
     LIGHTNING = 4
+    HYPER_SD = 4
 
 
 class Performance(Enum):
@@ -121,6 +131,7 @@ class Performance(Enum):
     SPEED = 'Speed'
     EXTREME_SPEED = 'Extreme Speed'
     LIGHTNING = 'Lightning'
+    HYPER_SD = 'Hyper-SD'
 
     @classmethod
     def list(cls) -> list:
@@ -130,10 +141,19 @@ class Performance(Enum):
     def has_restricted_features(cls, x) -> bool:
         if isinstance(x, Performance):
             x = x.value
-        return x in [cls.EXTREME_SPEED.value, cls.LIGHTNING.value]
+        return x in [cls.EXTREME_SPEED.value, cls.LIGHTNING.value, cls.HYPER_SD.value]
 
     def steps(self) -> int | None:
         return Steps[self.name].value if Steps[self.name] else None
 
     def steps_uov(self) -> int | None:
         return StepsUOV[self.name].value if Steps[self.name] else None
+
+
+performance_selections = [
+    (f'Quality <span style="color: grey;"> \U00002223  {Steps.QUALITY.value} steps</span>', Performance.QUALITY.value),
+    (f'Speed <span style="color: grey;"> \U00002223  {Steps.SPEED.value} steps</span>', Performance.SPEED.value),
+    (f'Extreme Speed (LCM) <span style="color: grey;"> \U00002223 {Steps.EXTREME_SPEED.value} steps, intermediate results disabled</span>', Performance.EXTREME_SPEED.value),
+    (f'Lightning <span style="color: grey;"> \U00002223 {Steps.LIGHTNING.value} steps, intermediate results disabled</span>', Performance.LIGHTNING.value),
+    (f'Hyper-SD <span style="color: grey;"> \U00002223 {Steps.HYPER_SD.value} steps, intermediate results disabled</span>', Performance.HYPER_SD.value)
+]
